@@ -21,6 +21,9 @@ namespace FtpDownloader
             }
         }
 
+        /// <summary>
+        /// Get dictionary of values, where key is file name and value is (file size, file size is valid)
+        /// </summary>
         public Dictionary<string, (long, bool)> GetListOfFiles()
         {
             var result = new Dictionary<string, (long, bool)>();
@@ -79,6 +82,12 @@ namespace FtpDownloader
             }
         }
 
+        /// <summary>
+        /// Download file from ftp
+        /// </summary>
+        /// <param name="fileName"> file to download</param>
+        /// <param name="localPath">file save directory</param>
+        /// <returns>Task</returns>
         public async Task DownloadFile(string fileName, string localPath)
         {
             if (!Directory.Exists(localPath))
@@ -111,6 +120,12 @@ namespace FtpDownloader
             }
         }
 
+        /// <summary>
+        /// Download files from ftp
+        /// </summary>
+        /// <param name="listOfFiles">List of file names</param>
+        /// <param name="localPath">File save directory</param>
+        /// <param name="simultaneously">How many files download simultaneously</param>
         public void DownloadFiles(List<string> listOfFiles, string localPath, int simultaneously)
         {
             var allTaskDictionary = new Dictionary<int, string>();
@@ -139,6 +154,10 @@ namespace FtpDownloader
             }
         }
 
+        /// <summary>
+        /// Delete file from ftp
+        /// </summary>
+        /// <param name="fileName">File to delete</param>
         public void DeleteFile(string fileName)
         {
             Console.WriteLine($"Deleting file {fileName}");
@@ -152,7 +171,12 @@ namespace FtpDownloader
             }
         }
         
-        private void DeleteFileIfExistsLocally(Dictionary<string, (long, bool)> listOfFilesOnFtp, Dictionary<string, long> listOfFilesLocally)
+        /// <summary>
+        /// Delete files from ftp if they exist on the local disk
+        /// </summary>
+        /// <param name="listOfFilesOnFtp">List of files to delete from ftp</param>
+        /// <param name="listOfFilesLocally">List of files locally</param>
+        private void DeleteFilesIfExistsLocally(Dictionary<string, (long, bool)> listOfFilesOnFtp, Dictionary<string, long> listOfFilesLocally)
         {
             foreach (var fileOnFtp in listOfFilesOnFtp)
             {
@@ -163,6 +187,12 @@ namespace FtpDownloader
             }
         }
         
+        /// <summary>
+        /// Download Files from ftp if they do not exist on local disk or are having wrong size (are corrupt)
+        /// </summary>
+        /// <param name="localPath">File save directory</param>
+        /// <param name="listOfFileLocally">List of files locally</param>
+        /// <param name="listOfFilesOnFtp">Files to download from ftp</param>
         public void DownloadFilesIfTheyDoNotExistLocallyOrAreWrongSize(string localPath, Dictionary<string, long> listOfFileLocally, Dictionary<string, (long, bool)> listOfFilesOnFtp)
         {
             var listOfFilesLocallyWithoutLocalPath = GetDictionary(listOfFileLocally, $"{localPath}/", "");
@@ -181,6 +211,12 @@ namespace FtpDownloader
             DownloadFiles(filesThatHaveFailedToDownload.Select(file=>file.Key).ToList(), localPath, simultaneously);
         }
         
+        /// <summary>
+        /// Get dictionary of files where file names have been changed (replaced path from the file name)
+        /// </summary>
+        /// <param name="fileDictionary">Dictionary of files</param>
+        /// <param name="removePathFromFileName">part of the file name which will get removed from the file name</param>
+        /// <param name="replaceWithThis">string that replaces <paramref name="removePathFromFileName"/></param>
         private static Dictionary<string, long> GetDictionary(Dictionary<string, long> fileDictionary, string removePathFromFileName, string replaceWithThis)
         {
             var result = new Dictionary<string, long>();
@@ -193,6 +229,12 @@ namespace FtpDownloader
             return result;
         }
         
+        /// <summary>
+        /// Compare file sizes on the local disk and ftp server
+        /// </summary>
+        /// <param name="local">Dictionary of files locally</param>
+        /// <param name="ftp">Dictionary of files on the ftp server</param>
+        /// <returns></returns>
         private static Dictionary<string, (long sizeLocal, long sizeOnFtp)> CompareFileSizes(Dictionary<string, long> local, Dictionary<string, (long, bool)> ftp)
         {
             var result = new Dictionary<string, (long sizeLocal, long sizeOnFtp)>();
