@@ -26,7 +26,9 @@ namespace FtpDownloader
             var listOfFileLocally = GetListOfFiles(localPath);
             var listOfFilesOnFtp = ftp.GetListOfFiles();
 
-            ftp.DownloadFilesIfTheyDoNotExistLocallyOrAreWrongSize(localPath, listOfFileLocally, listOfFilesOnFtp);
+            //ftp.DownloadFilesIfTheyDoNotExistLocallyOrAreWrongSize(localPath, listOfFileLocally, listOfFilesOnFtp);
+
+            //ftp.DeleteFilesIfExistsLocally(listOfFilesOnFtp, listOfFileLocally, localPath);
         }
 
         private static Dictionary<string, long> GetListOfFiles(string path)

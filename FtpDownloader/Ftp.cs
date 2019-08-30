@@ -176,11 +176,12 @@ namespace FtpDownloader
         /// </summary>
         /// <param name="listOfFilesOnFtp">List of files to delete from ftp</param>
         /// <param name="listOfFilesLocally">List of files locally</param>
-        private void DeleteFilesIfExistsLocally(Dictionary<string, (long, bool)> listOfFilesOnFtp, Dictionary<string, long> listOfFilesLocally)
+        public void DeleteFilesIfExistsLocally(Dictionary<string, (long, bool)> listOfFilesOnFtp, Dictionary<string, long> listOfFilesLocally, string localPath)
         {
+            var listOfFilesLocallyWithoutLocalPath = GetDictionary(listOfFilesLocally, $"{localPath}/", "");
             foreach (var fileOnFtp in listOfFilesOnFtp)
             {
-                if (listOfFilesLocally.ContainsKey(fileOnFtp.Key))
+                if (listOfFilesLocallyWithoutLocalPath.ContainsKey(fileOnFtp.Key))
                 {
                     DeleteFile(fileOnFtp.Key);   
                 }
@@ -196,7 +197,6 @@ namespace FtpDownloader
         public void DownloadFilesIfTheyDoNotExistLocallyOrAreWrongSize(string localPath, Dictionary<string, long> listOfFileLocally, Dictionary<string, (long, bool)> listOfFilesOnFtp)
         {
             var listOfFilesLocallyWithoutLocalPath = GetDictionary(listOfFileLocally, $"{localPath}/", "");
-
             var listOfFilesOnFtpToDownload = listOfFilesOnFtp.Where(file => !listOfFilesLocallyWithoutLocalPath.ContainsKey(file.Key)).ToList();
             var filesThatHaveFailedToDownload = CompareFileSizes(listOfFilesLocallyWithoutLocalPath, listOfFilesOnFtp);
 
