@@ -21,8 +21,10 @@ namespace FtpDownloader
             }
         }
 
-        public IEnumerable<string> GetListOfFiles()
+        public Dictionary<string, (long, bool)> GetListOfFiles()
         {
+            var result = new Dictionary<string, (long, bool)>();
+            
             var response = ListDirResponse();
             string[] lines = response.Split(
                 new[] { "\r\n", "\r", "\n" },
@@ -31,6 +33,11 @@ namespace FtpDownloader
 
             foreach (var line in lines)
             {
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    continue;
+                }
+
                 if (line.StartsWith("total", true, CultureInfo.InvariantCulture))
                 {
                     continue;
@@ -41,16 +48,24 @@ namespace FtpDownloader
                     continue;
                 }
 
-                var lineSplit = line.Split("   ");
-                //4843675 Jun 24 20:13 IMG_20190624_201308.jpg
-                if (lineSplit.Length < 4)
+                try
                 {
-                    continue;
-                }
+                    var lineSplit = line.Split(" ");
+                    var test = lineSplit.Where(ln => !string.IsNullOrWhiteSpace(ln)).ToList();
+                    var fileSizeString = test[4];
+                    var valid = long.TryParse(fileSizeString, out var fileSize);
+                    var fileName = test.Last();
 
-                var fileName = lineSplit[3].Split(" ").Last();
-                yield return fileName;
+                    result[fileName] = (fileSize, valid);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+                
             }
+
+            return result;
         }
 
         private string ListDirResponse()
@@ -65,7 +80,6 @@ namespace FtpDownloader
                     using (var reader = new StreamReader(responseStream))
                     {
                         var result = reader.ReadToEnd();
-                        Console.WriteLine();
                         Console.WriteLine($"Directory List Complete, status {response.StatusDescription}");
                         return result;
                     }
@@ -125,6 +139,24 @@ namespace FtpDownloader
                 {
                     Task.WaitAll(taskDictionary.Values.ToArray());
                 }
+            }
+
+            if (taskDictionary.Count > 0)
+            {
+                Task.WaitAll(taskDictionary.Values.ToArray());
+            }
+        }
+
+        public void DeleteFile(string fileName)
+        {
+            Console.WriteLine($"Deleting file {fileName}");
+
+            var request = (FtpWebRequest)WebRequest.Create($"{Host}{fileName}");
+            request.Method = WebRequestMethods.Ftp.DeleteFile;
+
+            using (var response = (FtpWebResponse) request.GetResponse())
+            {
+                Console.WriteLine("Delete status: {0}", response.StatusDescription);
             }
         }
     }
