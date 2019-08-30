@@ -151,5 +151,66 @@ namespace FtpDownloader
                 Console.WriteLine("Delete status: {0}", response.StatusDescription);
             }
         }
+        
+        private void DeleteFileIfExistsLocally(Dictionary<string, (long, bool)> listOfFilesOnFtp, Dictionary<string, long> listOfFilesLocally)
+        {
+            foreach (var fileOnFtp in listOfFilesOnFtp)
+            {
+                if (listOfFilesLocally.ContainsKey(fileOnFtp.Key))
+                {
+                    DeleteFile(fileOnFtp.Key);   
+                }
+            }
+        }
+        
+        public void DownloadFilesIfTheyDoNotExistLocallyOrAreWrongSize(string localPath, Dictionary<string, long> listOfFileLocally, Dictionary<string, (long, bool)> listOfFilesOnFtp)
+        {
+            var listOfFilesLocallyWithoutLocalPath = GetDictionary(listOfFileLocally, $"{localPath}/", "");
+
+            var listOfFilesOnFtpToDownload = listOfFilesOnFtp.Where(file => !listOfFilesLocallyWithoutLocalPath.ContainsKey(file.Key)).ToList();
+            var filesThatHaveFailedToDownload = CompareFileSizes(listOfFilesLocallyWithoutLocalPath, listOfFilesOnFtp);
+
+            if (listOfFilesOnFtpToDownload.Count + filesThatHaveFailedToDownload.Count == 0)
+            {
+                Console.WriteLine("Nothing to download");
+                return;
+            }
+
+            var simultaneously = 4;
+            DownloadFiles(listOfFilesOnFtpToDownload.Select(file=>file.Key).ToList(), localPath, simultaneously);
+            DownloadFiles(filesThatHaveFailedToDownload.Select(file=>file.Key).ToList(), localPath, simultaneously);
+        }
+        
+        private static Dictionary<string, long> GetDictionary(Dictionary<string, long> fileDictionary, string removePathFromFileName, string replaceWithThis)
+        {
+            var result = new Dictionary<string, long>();
+
+            foreach (var item in fileDictionary)
+            {
+                result[item.Key.Replace(removePathFromFileName, replaceWithThis)] = item.Value;
+            }
+
+            return result;
+        }
+        
+        private static Dictionary<string, (long sizeLocal, long sizeOnFtp)> CompareFileSizes(Dictionary<string, long> local, Dictionary<string, (long, bool)> ftp)
+        {
+            var result = new Dictionary<string, (long sizeLocal, long sizeOnFtp)>();
+            foreach (var localFileItem in local)
+            {
+                var key = localFileItem.Key;
+                if (ftp.ContainsKey(key))
+                {
+                    var ftpItem = ftp[key];
+                    if (ftpItem.Item1 != localFileItem.Value)
+                    {
+                        result[key] = (localFileItem.Value, ftpItem.Item1);
+                    }
+                }
+            }
+
+            return result;
+        }
+
     }
 }
