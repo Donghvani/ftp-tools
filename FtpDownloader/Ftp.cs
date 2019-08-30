@@ -24,10 +24,10 @@ namespace FtpDownloader
         public Dictionary<string, (long, bool)> GetListOfFiles()
         {
             var result = new Dictionary<string, (long, bool)>();
-            
+
             var response = ListDirResponse();
             string[] lines = response.Split(
-                new[] { "\r\n", "\r", "\n" },
+                new[] {"\r\n", "\r", "\n"},
                 StringSplitOptions.None
             );
 
@@ -48,21 +48,13 @@ namespace FtpDownloader
                     continue;
                 }
 
-                try
-                {
-                    var lineSplit = line.Split(" ");
-                    var test = lineSplit.Where(ln => !string.IsNullOrWhiteSpace(ln)).ToList();
-                    var fileSizeString = test[4];
-                    var valid = long.TryParse(fileSizeString, out var fileSize);
-                    var fileName = test.Last();
+                var lineSplit = line.Split(" ");
+                var fileInfoSplit = lineSplit.Where(ln => !string.IsNullOrWhiteSpace(ln)).ToList();
+                var fileSizeString = fileInfoSplit[4];
+                var valid = long.TryParse(fileSizeString, out var fileSize);
+                var fileName = fileInfoSplit.Last();
 
-                    result[fileName] = (fileSize, valid);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
-                
+                result[fileName] = (fileSize, valid);
             }
 
             return result;
