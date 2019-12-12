@@ -18,17 +18,23 @@ namespace FtpDownloader
             }
             else
             {
-                localPath = "downloaded";
+                localPath = "downloaded_03_11_2019";
                 Console.WriteLine($"No argument was specified for local saving path, defaulting to {localPath}");
             }
 
-            var ftp =new Ftp("ftp://192.168.0.3:1024/");
+            if (!Directory.Exists(localPath))
+            {
+                Directory.CreateDirectory(localPath);
+            }
+
+            //ftp://10.60.8.217:1024/
+            var ftp =new Ftp("ftp://10.60.8.217:1024/");
             var listOfFileLocally = GetListOfFiles(localPath);
             var listOfFilesOnFtp = ftp.GetListOfFiles();
 
-            //ftp.DownloadFilesIfTheyDoNotExistLocallyOrAreWrongSize(localPath, listOfFileLocally, listOfFilesOnFtp);
+            ftp.DownloadFilesIfTheyDoNotExistLocallyOrAreWrongSize(localPath, listOfFileLocally, listOfFilesOnFtp);
 
-            //ftp.DeleteFilesIfExistsLocally(listOfFilesOnFtp, listOfFileLocally, localPath);
+            ftp.DeleteFilesIfExistsLocally(listOfFilesOnFtp, listOfFileLocally, localPath);
         }
 
         private static Dictionary<string, long> GetListOfFiles(string path)
