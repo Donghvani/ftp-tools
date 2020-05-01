@@ -28,10 +28,13 @@ namespace FtpDownloader
             }
 
             //ftp://10.60.8.217:1024/
-            var ftp =new Ftp("ftp://10.60.8.217:1024/");
+            var ftp =new Ftp("ftp://192.168.0.3:1024/");
             var listOfFileLocally = GetListOfFiles(localPath);
             var listOfFilesOnFtp = ftp.GetListOfFiles();
 
+            Console.WriteLine($"list of files locally {listOfFileLocally.Count}");
+            Console.WriteLine($"list of files on ftp {listOfFilesOnFtp.Count}");
+            
             ftp.DownloadFilesIfTheyDoNotExistLocallyOrAreWrongSize(localPath, listOfFileLocally, listOfFilesOnFtp);
 
             ftp.DeleteFilesIfExistsLocally(listOfFilesOnFtp, listOfFileLocally, localPath);

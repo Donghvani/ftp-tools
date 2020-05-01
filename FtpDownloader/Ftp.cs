@@ -206,6 +206,8 @@ namespace FtpDownloader
                 return;
             }
 
+            Console.WriteLine($"listOfFilesOnFtpToDownload: {listOfFilesOnFtpToDownload.Count}");
+            Console.WriteLine($"filesThatHaveFailedToDownload: {filesThatHaveFailedToDownload.Count}");
             var simultaneously = 4;
             DownloadFiles(listOfFilesOnFtpToDownload.Select(file=>file.Key).ToList(), localPath, simultaneously);
             DownloadFiles(filesThatHaveFailedToDownload.Select(file=>file.Key).ToList(), localPath, simultaneously);
